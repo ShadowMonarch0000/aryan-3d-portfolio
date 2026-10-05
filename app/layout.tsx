@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Aryan — Creative Developer & Digital Artist",
-  description: "Aryan builds immersive digital experiences, interactive 3D worlds, and thoughtful web interfaces.",
+  description: "An anime-inspired sword battle unfolds as you scroll through Aryan's creative developer portfolio.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

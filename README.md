@@ -1,6 +1,6 @@
 # Aryan — Creative Developer Portfolio
 
-A dark, cinematic portfolio experience featuring an original, procedural Three.js sword duel that evolves as you scroll. Built with Next.js, React Three Fiber, and Drei.
+A cinematic portfolio experience featuring an original anime-inspired sword battle that evolves as you scroll. Built with Next.js and a layered SVG illustration for crisp, responsive artwork.
 
 ## Run locally
 
@@ -17,4 +17,4 @@ Open [http://localhost:3000](http://localhost:3000) to explore the portfolio. Sc
 - Adjust colors, typography, and responsive layout in `app/globals.css`.
 - Change the page title and description in `app/layout.tsx`.
 
-The 3D fighters are built from Three.js primitives; no external model files are required.
+The battlefield, fighters, swords, magic trails, and impact effects are drawn in SVG and animated from page scroll progress. No external art or model files are required.
