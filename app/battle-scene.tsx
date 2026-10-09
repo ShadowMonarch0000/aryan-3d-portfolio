@@ -13,13 +13,22 @@ function AnimeFighter({ side, progress, clash }: { side: "frost" | "ember"; prog
   const palette = blue
     ? { main: "#3fd9ef", shadow: "#153b68", deep: "#101a31", light: "#bdfaff", trim: "#84efff" }
     : { main: "#fa594d", shadow: "#711f39", deep: "#271329", light: "#ffd7a0", trim: "#ffcc68" };
-  const approach = smooth(0.22, 0.51, progress) * (1 - smooth(0.61, 0.79, progress));
-  const recoil = smooth(0.61, 0.76, progress);
-  const origin = blue ? 548 - approach * 24 - recoil * 10 : 1005 + approach * 24 + recoil * 10;
-  const lean = blue ? -2 - approach * 7 + recoil * 5 : 2 + approach * 7 - recoil * 5;
-  const swordAngle = -125 + (blue ? 97 : 94) * approach + recoil * 32;
-  const handY = blue ? 516 - approach * 16 : 507 - approach * 13;
-  const capeLift = Math.sin(progress * Math.PI * 8 + (blue ? 0 : 1.8)) * 8 + clash * 26;
+  const firstLunge = smooth(0.16, 0.43, progress) * (1 - smooth(0.48, 0.59, progress));
+  const secondLunge = smooth(0.67, 0.79, progress) * (1 - smooth(0.84, 0.94, progress));
+  const approach = Math.max(firstLunge, secondLunge);
+  const firstRecoil = smooth(0.46, 0.57, progress) * (1 - smooth(0.63, 0.69, progress));
+  const secondRecoil = smooth(0.83, 0.92, progress);
+  const recoil = Math.max(firstRecoil, secondRecoil);
+  const firstRaise = smooth(0.08, 0.22, progress);
+  const firstSwing = smooth(0.22, 0.44, progress);
+  const secondRaise = smooth(0.62, 0.72, progress);
+  const secondSwing = smooth(0.72, 0.81, progress);
+  const baseAngle = blue ? -151 : -154;
+  const swordAngle = baseAngle + (blue ? 120 : 123) * firstSwing - 42 * firstRecoil - 82 * secondRaise + (blue ? 120 : 123) * secondSwing - 42 * secondRecoil + firstRaise * 3;
+  const origin = blue ? 548 + approach * 42 - recoil * 17 : 1005 - approach * 42 + recoil * 17;
+  const lean = blue ? -2 - approach * 8 + recoil * 5 : 2 + approach * 8 - recoil * 5;
+  const handY = blue ? 516 - approach * 14 + recoil * 7 : 507 - approach * 13 + recoil * 7;
+  const capeLift = Math.sin(progress * Math.PI * 12 + (blue ? 0 : 1.8)) * 9 + clash * 34 + approach * 14;
 
   return (
     <g transform={`translate(${origin} 0) rotate(${lean} 0 440) scale(${blue ? 1 : -1} 1)`}>
@@ -84,11 +93,24 @@ function AnimeFighter({ side, progress, clash }: { side: "frost" | "ember"; prog
 }
 
 export default function BattleScene({ progress }: { progress: number }) {
-  const approach = smooth(0.2, 0.5, progress) * (1 - smooth(0.62, 0.78, progress));
-  const clash = smooth(0.31, 0.52, progress) * (1 - smooth(0.59, 0.75, progress));
-  const impact = Math.exp(-Math.pow((progress - 0.55) * 15, 2));
-  const drift = progress * 20;
-  const speedlineOpacity = 0.15 + approach * 0.55 + impact * 0.3;
+  const firstClash = smooth(0.34, 0.45, progress) * (1 - smooth(0.49, 0.59, progress));
+  const secondClash = smooth(0.76, 0.82, progress) * (1 - smooth(0.84, 0.92, progress));
+  const clash = clamp(firstClash + secondClash);
+  const impact = clamp(
+    Math.exp(-Math.pow((progress - 0.465) * 31, 2)) +
+    Math.exp(-Math.pow((progress - 0.815) * 36, 2)) * 0.92,
+  );
+  const firstRush = smooth(0.16, 0.43, progress) * (1 - smooth(0.48, 0.59, progress));
+  const secondRush = smooth(0.67, 0.79, progress) * (1 - smooth(0.84, 0.94, progress));
+  const approach = Math.max(firstRush, secondRush);
+  const firstCameraIn = smooth(0.12, 0.45, progress) * (1 - smooth(0.49, 0.64, progress));
+  const secondCameraIn = smooth(0.64, 0.82, progress) * (1 - smooth(0.84, 0.98, progress));
+  const cameraScale = 1 + smooth(0, 0.22, progress) * 0.05 + firstCameraIn * 0.2 + secondCameraIn * 0.17;
+  const cameraX = Math.sin(progress * Math.PI * 2) * 10 + Math.sin(progress * 380) * impact * 4;
+  const cameraY = -firstCameraIn * 19 - secondCameraIn * 13 + Math.sin(progress * Math.PI * 2.4) * 7 + Math.cos(progress * 420) * impact * 3;
+  const cameraTransform = `translate(${720 + cameraX} ${450 + cameraY}) scale(${cameraScale}) translate(-720 -450)`;
+  const drift = progress * 220;
+  const speedlineOpacity = 0.08 + approach * 0.52 + impact * 0.4;
   const rocks = useMemo(() => [
     { x: 382, y: 507, r: 22, d: "M-24 -4 L-12 -25 L9 -21 L23 -3 L9 20 L-14 15Z" },
     { x: 1134, y: 428, r: -19, d: "M-27 -12 L-8 -28 L20 -18 L25 4 L6 23 L-20 14Z" },
@@ -109,6 +131,7 @@ export default function BattleScene({ progress }: { progress: number }) {
         <filter id="soft-smoke" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="15" /></filter>
       </defs>
 
+      <g transform={cameraTransform}>
       <rect width="1440" height="900" fill="url(#battle-sky)" />
       <ellipse cx="797" cy="285" rx="440" ry="300" fill="url(#battle-sun)" />
       <circle cx="813" cy="317" r="77" fill="#ffe6b5" opacity=".34" />
@@ -157,13 +180,13 @@ export default function BattleScene({ progress }: { progress: number }) {
       </g>
 
       {/* Arcane ribbons frame the encounter and sweep inward on the strike. */}
-      <g fill="none" strokeLinecap="round" filter="url(#battle-glow)" opacity={0.18 + clash * .56}>
-        <path d="M144 603 C272 451 456 458 564 529 C643 582 688 435 788 373 C872 320 945 438 1004 539 C1116 626 1217 586 1310 482" stroke="#48dbff" strokeWidth="14" />
-        <path d="M1290 607 C1164 453 1012 472 929 527 C848 580 842 430 788 373 C712 301 584 483 494 548 C398 619 274 580 196 480" stroke="#ffb94d" strokeWidth="13" />
+      <g fill="none" strokeLinecap="round" filter="url(#battle-glow)" opacity={0.14 + clash * .7}>
+        <path d="M144 603 C272 451 456 458 564 529 C643 588 691 485 780 448 C870 411 945 438 1004 539 C1116 626 1217 586 1310 482" stroke="#48dbff" strokeWidth="16" />
+        <path d="M1290 607 C1164 453 1012 472 929 527 C848 580 842 483 780 448 C712 411 584 483 494 548 C398 619 274 580 196 480" stroke="#ffb94d" strokeWidth="15" />
       </g>
       <g fill="none" strokeLinecap="round" opacity={0.14 + clash * .55}>
-        <path d="M173 593 C307 468 475 478 584 542 C656 585 712 432 788 373" stroke="#c0fbff" strokeWidth="4" />
-        <path d="M1264 587 C1141 473 1006 488 915 541 C836 588 815 431 788 373" stroke="#fff0b6" strokeWidth="4" />
+        <path d="M173 593 C307 468 475 478 584 542 C656 585 712 482 780 448" stroke="#c0fbff" strokeWidth="4" />
+        <path d="M1264 587 C1141 473 1006 488 915 541 C836 588 815 482 780 448" stroke="#fff0b6" strokeWidth="4" />
       </g>
 
       <g className="battle-action">
@@ -180,7 +203,7 @@ export default function BattleScene({ progress }: { progress: number }) {
         </g>
 
         {/* A bright, unmistakable blade-on-blade contact point. */}
-        <g transform="translate(788 373)" opacity={impact} filter="url(#battle-glow)">
+        <g transform="translate(780 448)" opacity={impact} filter="url(#battle-glow)">
         <circle r={28 + impact * 22} fill="#fff7d9" opacity=".88" />
         <circle r="9" fill="#fff" />
         <g stroke="#fff3c4" strokeWidth="7" strokeLinecap="round">
@@ -196,6 +219,7 @@ export default function BattleScene({ progress }: { progress: number }) {
         </g>
       </g>
       <rect width="1440" height="900" fill="url(#battle-sky)" opacity=".035" />
+      </g>
     </svg>
   );
 }

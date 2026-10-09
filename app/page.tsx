@@ -4,19 +4,28 @@ import { useEffect, useState } from "react";
 import BattleScene from "./battle-scene";
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
-const chapters = ["The arrival", "First contact", "Arcane clash", "Afterglow"];
+const chapters = ["The arrival", "The duel begins", "Blade impact", "Arcane aftershock"];
 
 export default function Home() {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
+    let frame = 0;
     const update = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? clamp01(window.scrollY / max) : 0);
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        setProgress(max > 0 ? clamp01(window.scrollY / max) : 0);
+        frame = 0;
+      });
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
-    return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   const chapterIndex = Math.min(3, Math.floor(progress * 4));
