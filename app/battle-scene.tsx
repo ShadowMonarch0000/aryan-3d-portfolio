@@ -111,6 +111,10 @@ export default function BattleScene({ progress }: { progress: number }) {
   const cameraTransform = `translate(${720 + cameraX} ${450 + cameraY}) scale(${cameraScale}) translate(-720 -450)`;
   const drift = progress * 220;
   const speedlineOpacity = 0.08 + approach * 0.52 + impact * 0.4;
+  const slashTrail = clamp(Math.max(
+    smooth(0.31, 0.39, progress) * (1 - smooth(0.44, 0.49, progress)),
+    smooth(0.75, 0.79, progress) * (1 - smooth(0.82, 0.87, progress)),
+  ));
   const rocks = useMemo(() => [
     { x: 382, y: 507, r: 22, d: "M-24 -4 L-12 -25 L9 -21 L23 -3 L9 20 L-14 15Z" },
     { x: 1134, y: 428, r: -19, d: "M-27 -12 L-8 -28 L20 -18 L25 4 L6 23 L-20 14Z" },
@@ -212,6 +216,17 @@ export default function BattleScene({ progress }: { progress: number }) {
         </g>
         <g fill="#fff4c8"><path d="M-103 -43 l7 21 19 7 -19 7 -7 21 -7 -21 -19 -7 19 -7Z" /><path d="M93 21 l5 15 15 5 -15 5 -5 15 -5 -15 -15 -5 15 -5Z" /><circle cx="-52" cy="54" r="7" /><circle cx="52" cy="-54" r="6" /></g>
         </g>
+        {/* Curved blade trails flare just before contact, then disappear on impact. */}
+        <g fill="none" strokeLinecap="round" filter="url(#battle-glow)" opacity={slashTrail * 0.9}>
+          <path d="M210 653 C398 570 555 499 780 448 C623 543 429 632 250 687" stroke="#c5fbff" strokeWidth="12" />
+          <path d="M1348 653 C1160 570 1005 499 780 448 C937 543 1130 632 1310 687" stroke="#ffe0a0" strokeWidth="11" />
+        </g>
+        {/* Graphic impact cuts give the hit a hand-inked, anime key-frame feel. */}
+        <g transform="translate(780 448) rotate(38)" opacity={impact * 0.88}>
+          <path d="M-250 -27 Q-103 -54 0 -19 Q120 19 250 -27 L250 8 Q112 45 0 13 Q-114 -18 -250 18Z" fill="#fff7df" />
+          <path d="M-227 30 Q-92 7 0 34 Q110 63 226 27" fill="none" stroke="#171820" strokeWidth="8" strokeLinecap="square" />
+          <path d="M-205 -49 L-144 -35 M175 39 L225 53" stroke="#fff" strokeWidth="5" />
+        </g>
         <g fill="#fff1c7" opacity={impact}>
           <path d="M698 329 l5 14 14 5 -14 5 -5 14 -5 -14 -14 -5 14 -5Z" />
           <path d="M878 412 l4 11 11 4 -11 4 -4 11 -4 -11 -11 -4 11 -4Z" />
@@ -220,6 +235,9 @@ export default function BattleScene({ progress }: { progress: number }) {
       </g>
       <rect width="1440" height="900" fill="url(#battle-sky)" opacity=".035" />
       </g>
+      {/* One-frame white exposure flash at the exact sword contact point. */}
+      <rect width="1440" height="900" fill="#fff8e7" opacity={impact * 0.3} />
+      <rect width="1440" height="900" fill="#fff" opacity={impact * 0.08} />
     </svg>
   );
 }
